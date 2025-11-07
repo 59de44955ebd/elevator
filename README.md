@@ -142,4 +142,4 @@ else:
 
 ## Usage in frozen Python applications
 
-For function `run_elevated_command` to work in a frozen application, `elevator` has to be imported at the top of the application's main/entry script (the one that was specied when freezing e.g. with [PyInstaller](https://pyinstaller.org/en/stable/)).
+For function `run_elevated_command` to work in a frozen application, `elevator` has to be imported at the top of the application's main/entry script (the one that was specified when freezing e.g. with [PyInstaller](https://pyinstaller.org/en/stable/)).
