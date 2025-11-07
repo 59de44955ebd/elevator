@@ -2,7 +2,7 @@
 
 A Python 3 module for Windows 10/11 for dealing with elevation/UAC.
 
-Its unique selling point ;-) is function `run_elevated_command`, which allows to run an elevated command from an unelevated Python process and return the result - stdout, stderr and exit code - back to that unelevated process (without any temporary files involved).
+Its unique selling point ;-) is function `run_elevated_command`, which allows to run an elevated command from an unelevated Python process **and return the result**  - stdout, stderr and exit code - back to that unelevated process (without any temporary files involved).
 
 ## Dependencies
 
