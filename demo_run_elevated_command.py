@@ -6,4 +6,4 @@ stdout, stderr, exit_code = run_elevated_command(r"cmd /c dir %windir%\system32\
 if exit_code == 0:
     print("Result:", stdout.decode("oem"))
 else:
-    print("Error:", stderr.decode("oem"))
+    print("Error:", exit_code, stderr.decode("oem"))

@@ -507,7 +507,7 @@ class _Receiver():
     def run(self, command_line: str, cwd: str = '') -> tuple[bytes, bytes, int]:
         if cwd.endswith('\\'):
             cwd += '\\'
-        if exec_elevated(sys.executable, f'"{__file__}" "{command_line}" --hwnd={self.hwnd} --cwd="{cwd}"') != False:
+        if exec_elevated(sys.executable, f'"{__file__}" "{[self.hwnd, command_line, cwd]}"') != False:
             msg = MSG()
             while user32.GetMessageW(byref(msg), 0, 0, 0) > 0:
                 user32.TranslateMessage(byref(msg))
@@ -529,16 +529,9 @@ def run_unelevated_command(command_line: str, cwd: str = '') -> tuple[bytes, byt
 
 # For internal use only
 if __name__ == "__main__":
-    import argparse
-    parser = argparse.ArgumentParser()
-    parser.add_argument('command_line', type=str)
-    parser.add_argument('--cwd', type=str, default='')
-    parser.add_argument('--hwnd', type=int, required=True)
-    args = parser.parse_args().__dict__
-    hwnd = args['hwnd']
-    del args['hwnd']
+    hwnd, command_line, cwd = eval(sys.argv[1])
     try:
-        data_out, data_err, exit_code = _run(**args)
+        data_out, data_err, exit_code = _run(command_line, cwd)
     except Exception as e:
         data_out, data_err, exit_code = b'', str(e).encode(), 2
     out_len = len(data_out)
