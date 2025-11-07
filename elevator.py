@@ -529,7 +529,7 @@ def run_unelevated_command(command_line: str, cwd: str = '') -> tuple[bytes, byt
     return _run(command_line, cwd, unelevate=True)
 
 # For internal use only
-if __name__ == '__main__' or (IS_FROZEN and len(sys.argv) > 3 and sys.argv[1] == '-m'  and sys.argv[2] == 'elevator'):
+if __name__ == '__main__' or (IS_FROZEN and len(sys.argv) > 3 and sys.argv[1] == '-m' and sys.argv[2] == 'elevator'):
 
     hwnd, command_line, cwd = eval(sys.argv[3 if IS_FROZEN else 1])
     try:
@@ -541,4 +541,4 @@ if __name__ == '__main__' or (IS_FROZEN and len(sys.argv) > 3 and sys.argv[1] ==
     cds = COPYDATASTRUCT(out_len, len(data) + 1, cast(LPCSTR(data), LPVOID))
     user32.SendMessageW(hwnd, WM_COPYDATA, exit_code, byref(cds))
 
-    sys.exit(0)
+    sys.exit(0)  # Needed when used in a frozen Python application

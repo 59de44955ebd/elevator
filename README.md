@@ -139,3 +139,7 @@ if exit_code == 0:
 else:
     print("Error:", exit_code, '-', stderr.decode("oem"))  # Error: 1 - File not found
 ```
+
+## Usage in frozen Python applications
+
+For function `run_elevated_command` to work in a frozen application, `elevator` has to be imported at the top of the application's main/entry script (the one that was specied when freezing e.g. with [PyInstaller](https://pyinstaller.org/en/stable/)).
