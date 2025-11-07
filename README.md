@@ -2,7 +2,7 @@
 
 A Python 3 module for Windows 10/11 for dealing with elevation/UAC.
 
-Its unique selling point ;-) is function `run_elevated_command`, which allows to run an elevated command from an unelevated Python process, and return the result - stdout, stderr and exit code - back to that unelevated process (without any temporary files involved).
+Its unique selling point ;-) is function `run_elevated_command`, which allows to run an elevated command from an unelevated Python process and return the result - stdout, stderr and exit code - back to that unelevated process (without any temporary files involved).
 
 ## Dependencies
 
@@ -50,7 +50,7 @@ The unelevated process uses the same security traits as `Explorer`, therefor the
 
 If `wait=True` is specified, the function returns the exit code (`int`) of the unelevated process, otherwise it returns its process id (`int`).
 
-If some internally used Winapi function fails for whatever reason, an exception is raised that includes the system error code.
+If some internally used Winapi function fails for whatever reason, an exception is raised that includes the [system error code](https://learn.microsoft.com/en-us/windows/win32/debug/system-error-codes#system-error-codes).
 
 The `show` parameter (`int`) specifies if/how the window of the process is displayed, it defaults to 0 (SW_HIDE), i.e. the window is hidden. To show it specify 1 (SW_SHOWNORMAL). See [here](https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-showwindow) for other possible values.
 
@@ -85,12 +85,12 @@ This might be the *core feature* of the module, since it's the trickiest one. It
 - A temporary hidden Window is created.
 - A new elevated Python process is started, the command to execute as well as the HWND of the hidden window are passed to it via command line.
 - The user will get an UAC prompt and has to confirm it.
-- The elevated Python process executes the command, and then sends the result - stdout, stderr and exit code - to the temporary hidden window as a WM_COPYDATA window message, and exits.
+- The elevated Python process executes the command and then sends the result - stdout, stderr and exit code - to the temporary hidden window as a WM_COPYDATA window message and exits.
 - The hidden window receives the WM_COPYDATA message, closes the  temporary window and exits its window proc. stdout (`bytes`), stderr (`bytes`) and exit code (`int`) are returned to the calling function/code.
 
 If the user did not confirm the UAC prompt, stdout and stderr are empty and the exit code is 1.
 
-If some internally used Winapi function fails for whatever reason, stdout is empty,  stderr contains an error message that includes the system error code, and the exit code is 2.
+If some internally used Winapi function fails for whatever reason, stdout is empty,  stderr contains an error message that includes the [system error code](https://learn.microsoft.com/en-us/windows/win32/debug/system-error-codes#system-error-codes) and the exit code is 2.
 
 Usage example:
 ```python
@@ -117,7 +117,7 @@ Allows to run an unelevated command from an elevated Python process/app and retu
 
 The unelevated command uses the same security traits as `Explorer`, therefor the function requires `Explorer` to be running (which in Windows is always the case, unless it was deliberately killed).
 
-If some internally used Winapi function fails for whatever reason, an exception is raised that includes the system error code.
+If some internally used Winapi function fails for whatever reason, an exception is raised that includes the [system error code](https://learn.microsoft.com/en-us/windows/win32/debug/system-error-codes#system-error-codes).
 
 Usage example:
 ```python

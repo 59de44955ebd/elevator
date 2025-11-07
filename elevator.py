@@ -259,7 +259,7 @@ def exec_unelevated(exe: str, params: str = None, cwd: str = None, show: int = 0
         else:
             return kernel32.GetProcessId(exec_info.hProcess)
 
-    pid_explorer = _get_pid("explorer.exe")
+    pid_explorer = _get_pid('explorer.exe')
     if not pid_explorer:
         raise Exception(f'Getting Explorer PID failed with error {kernel32.GetLastError()}')
 
@@ -376,7 +376,7 @@ def _run(command_line: str, cwd: str = '', unelevate: bool = False) -> tuple[byt
     proc_info = PROCESS_INFORMATION()
 
     if IS_ELEVATED and unelevate:
-        pid_explorer = _get_pid("explorer.exe")
+        pid_explorer = _get_pid('explorer.exe')
         if not pid_explorer:
             raise Exception(f'Getting Explorer PID failed with error {kernel32.GetLastError()}')
 
