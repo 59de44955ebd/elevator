@@ -8,7 +8,7 @@ None. The module is 100% based on ctypes and native Winapi functions.
 
 ## Functions
 
-The module implements the following 4 public functions:
+The module exports the following 4 public functions:
 
 ### 1.) exec_elevated()
 
