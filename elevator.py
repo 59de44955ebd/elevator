@@ -1,10 +1,11 @@
-__all__ = ['exec_elevated', 'exec_unelevated', 'run_elevated_command', 'run_unelevated_command']
+__all__ = ['IS_ELEVATED', 'exec_elevated', 'exec_unelevated', 'run_elevated_command', 'run_unelevated_command']
 
 from ctypes import *
 from ctypes.wintypes import *
 import sys
 
 IS_64_BIT = sys.maxsize > 2**32
+IS_FROZEN = getattr(sys, 'frozen', False)
 
 ########################################
 # Winapi TypeDefs
@@ -135,18 +136,18 @@ class WNDCLASSEX(Structure):
         super(WNDCLASSEX, self).__init__(*args, **kwargs)
         self.cbSize = sizeof(self)
     _fields_ = [
-        ("cbSize", c_uint),
-        ("style", c_uint),
-        ("lpfnWndProc", WNDPROC),
-        ("cbClsExtra", c_int),
-        ("cbWndExtra", c_int),
-        ("hInstance", HANDLE),
-        ("hIcon", HANDLE),
-        ("hCursor", HANDLE),
-        ("hBrush", HANDLE),
-        ("lpszMenuName", LPCWSTR),
-        ("lpszClassName", LPCWSTR),
-        ("hIconSm", HANDLE)
+        ('cbSize', c_uint),
+        ('style', c_uint),
+        ('lpfnWndProc', WNDPROC),
+        ('cbClsExtra', c_int),
+        ('cbWndExtra', c_int),
+        ('hInstance', HANDLE),
+        ('hIcon', HANDLE),
+        ('hCursor', HANDLE),
+        ('hBrush', HANDLE),
+        ('lpszMenuName', LPCWSTR),
+        ('lpszClassName', LPCWSTR),
+        ('hIconSm', HANDLE)
     ]
 
 ########################################
@@ -311,9 +312,6 @@ def exec_unelevated(exe: str, params: str = None, cwd: str = None, show: int = 0
 
     return res
 
-########################################
-#
-########################################
 def _run(command_line: str, cwd: str = '', unelevate: bool = False) -> tuple[bytes, bytes, int]:
 
     h_child_stdout_read = HANDLE()
@@ -490,6 +488,7 @@ class _Receiver():
                 self.exit_code = wparam
                 user32.PostMessageW(hwnd, WM_QUIT, 0, 0)
             return user32.DefWindowProcW(hwnd, msg, wparam, lparam)
+
         self.windowproc = WNDPROC(_window_proc_callback)
         newclass = WNDCLASSEX()
         newclass.lpfnWndProc = self.windowproc
@@ -507,13 +506,15 @@ class _Receiver():
     def run(self, command_line: str, cwd: str = '') -> tuple[bytes, bytes, int]:
         if cwd.endswith('\\'):
             cwd += '\\'
-        if exec_elevated(sys.executable, f'"{__file__}" "{[self.hwnd, command_line, cwd]}"') != False:
+        command_line = f'-m elevator "{[self.hwnd, command_line, cwd]}"'
+        if exec_elevated(sys.executable, command_line) != False:
             msg = MSG()
             while user32.GetMessageW(byref(msg), 0, 0, 0) > 0:
                 user32.TranslateMessage(byref(msg))
                 user32.DispatchMessageW(byref(msg))
         user32.DestroyWindow(self.hwnd)
         return self.data_out, self.data_err, self.exit_code
+
 
 ########################################
 #
@@ -528,8 +529,9 @@ def run_unelevated_command(command_line: str, cwd: str = '') -> tuple[bytes, byt
     return _run(command_line, cwd, unelevate=True)
 
 # For internal use only
-if __name__ == "__main__":
-    hwnd, command_line, cwd = eval(sys.argv[1])
+if __name__ == '__main__' or (IS_FROZEN and len(sys.argv) > 3 and sys.argv[1] == '-m'  and sys.argv[2] == 'elevator'):
+
+    hwnd, command_line, cwd = eval(sys.argv[3 if IS_FROZEN else 1])
     try:
         data_out, data_err, exit_code = _run(command_line, cwd)
     except Exception as e:
@@ -538,3 +540,5 @@ if __name__ == "__main__":
     data = data_out + data_err
     cds = COPYDATASTRUCT(out_len, len(data) + 1, cast(LPCSTR(data), LPVOID))
     user32.SendMessageW(hwnd, WM_COPYDATA, exit_code, byref(cds))
+
+    sys.exit(0)

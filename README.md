@@ -2,13 +2,15 @@
 
 A Python 3 module for Windows 10/11 for dealing with elevation/UAC.
 
+Its unique selling point ;-) is function `run_elevated_command`, which allows to run an elevated command from an unelevated Python process, and return the result - stdout, stderr and exit code - back to that unelevated process (without any temporary files involved).
+
 ## Dependencies
 
 None. The module is 100% based on ctypes and native Winapi functions.
 
 ## Functions
 
-The module exports the following 4 public functions:
+In addition to constant IS_ELEVATED (`bool`), which indicates if the current Python process is elevated or not, the module exports the following 4 public functions:
 
 ### 1.) exec_elevated()
 
@@ -25,13 +27,15 @@ The `show` parameter (`int`) specifies if/how the window of the process is displ
 
 Usage example:
 ```python
-from elevator import exec_elevated
+from elevator import IS_ELEVATED, exec_elevated
+
+print('\nIs Python elevated:', 'yes' if IS_ELEVATED else 'no', '\n')
 
 # pid = exec_elevated("sc.exe", params="stop Spooler")
 
 exit_code = exec_elevated("sc.exe", params="stop Spooler", wait=True)
 
-print(exit_code)  # 0 if spooler service was stopped successfully
+print('Exit code:', exit_code)  # 0 if spooler service was stopped successfully
 ```
 
 ### 2.) exec_unelevated()
@@ -56,13 +60,16 @@ Usage example:
 This example only makes sense if Python was started from an elevated CMD/Terminal,
 or if it's part of a frozen Python app that was started elevated.
 """
-from elevator import exec_unelevated
+from elevator import IS_ELEVATED, exec_unelevated
+
+print('\nIs Python elevated:', 'yes' if IS_ELEVATED else 'no', '\n')
 
 # pid = exec_unelevated("cmd.exe", params=r"/c echo foo>D:\foo.txt")
 
 exit_code = exec_unelevated("cmd.exe", params=r"/c echo foo>D:\foo.txt", wait=True)
 
-print(exit_code)
+print('Exit code:', exit_code)
+
 # The created file can be moved or deleted by the user without requiring elevation
 ```
 
@@ -87,7 +94,9 @@ If some internally used Winapi function fails for whatever reason, stdout is emp
 
 Usage example:
 ```python
-from elevator import run_elevated_command
+from elevator import IS_ELEVATED, run_elevated_command
+
+print('\nIs Python elevated:', 'yes' if IS_ELEVATED else 'no', '\n')
 
 # This directory can only be listed by SYSTEM and Administrators
 stdout, stderr, exit_code = run_elevated_command(r"cmd /c dir %windir%\system32\config\systemprofile")
@@ -116,7 +125,9 @@ Usage example:
 This example only makes sense if Python was started from an elevated CMD/Terminal, 
 or if it's part of a frozen Python app that was started elevated.
 """
-from elevator import run_unelevated_command
+from elevator import IS_ELEVATED, run_unelevated_command
+
+print('\nIs Python elevated:', 'yes' if IS_ELEVATED else 'no', '\n')
 
 # This directory can only be listed by SYSTEM and Administrators,
 # so in this case it will fail, even if Python was started from an 
