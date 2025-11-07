@@ -68,7 +68,7 @@ print('\nIs Python elevated:', 'yes' if IS_ELEVATED else 'no', '\n')
 
 exit_code = exec_unelevated("cmd.exe", params=r"/c echo foo>D:\foo.txt", wait=True)
 
-print('Exit code:', exit_code)
+print('Exit code:', exit_code)  # 0 = success
 
 # The created file can be moved or deleted by the user without requiring elevation
 ```
@@ -104,7 +104,7 @@ stdout, stderr, exit_code = run_elevated_command(r"cmd /c dir %windir%\system32\
 if exit_code == 0:
     print("Result:", stdout.decode("oem"))
 else:
-    print("Error:", stderr.decode("oem"))
+    print("Error:", exit_code, '-', stderr.decode("oem"))
 ```
 
 ### 4.) run_unelevated_command()
@@ -137,5 +137,5 @@ stdout, stderr, exit_code = run_unelevated_command(r"cmd /c dir %windir%\system3
 if exit_code == 0:
     print("Result:", stdout.decode("oem"))
 else:
-    print("Error:", stderr.decode("oem"))  # Error: File not found
+    print("Error:", exit_code, '-', stderr.decode("oem"))  # Error: 1 - File not found
 ```

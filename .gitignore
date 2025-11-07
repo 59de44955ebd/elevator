@@ -3,4 +3,5 @@ releases/
 build/
 dist/
 *.spec
+make_dist.cmd
 _backup.rar

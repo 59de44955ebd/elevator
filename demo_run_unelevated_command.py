@@ -14,4 +14,4 @@ stdout, stderr, exit_code = run_unelevated_command(r"cmd /c dir %windir%\system3
 if exit_code == 0:
     print("Result:", stdout.decode("oem"))
 else:
-    print("Error:", stderr.decode("oem"))  # Error: File not found
+    print("Error:", exit_code, '-', stderr.decode("oem"))  # Error: 1 - File not found
