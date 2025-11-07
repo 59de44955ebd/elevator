@@ -527,49 +527,21 @@ def run_elevated_command(command_line: str, cwd: str = '') -> tuple[bytes, bytes
 def run_unelevated_command(command_line: str, cwd: str = '') -> tuple[bytes, bytes, int]:
     return _run(command_line, cwd, unelevate=True)
 
-
+# For internal use only
 if __name__ == "__main__":
-
     import argparse
     parser = argparse.ArgumentParser()
     parser.add_argument('command_line', type=str)
     parser.add_argument('--cwd', type=str, default='')
-    parser.add_argument('--hwnd', type=int, help='for internal use only!')
-
+    parser.add_argument('--hwnd', type=int, required=True)
     args = parser.parse_args().__dict__
-
     hwnd = args['hwnd']
     del args['hwnd']
-
-    if hwnd:
-        # private usage
-        try:
-            data_out, data_err, exit_code = _run(**args)
-        except Exception as e:
-            data_out, data_err, exit_code = b'', str(e).encode(), 2
-        out_len = len(data_out)
-        data = data_out + data_err
-        cds = COPYDATASTRUCT(out_len, len(data) + 1, cast(LPCSTR(data), LPVOID))
-        user32.SendMessageW(hwnd, WM_COPYDATA, exit_code, byref(cds))
-    else:
-        # public usage
-        out, err, exit_code = run_elevated_command(**args)
-        if exit_code == 0:
-            print(out)  # .decode('oem')
-        else:
-            print(err)
-
-
-# python elevator.py "cmd.exe /c dir"
-# python elevator.py "curl.exe --version"
-
-#res = exec_elevated(r'C:\Windows\System32\cmd.exe', params=r'/c dir C:\users\linux', show=0, wait=True)
-#res = exec_unelevated(r'C:\Windows\System32\cmd.exe', params=r'/c dir C:\users\linux', show=0, wait=True)
-#print(res)
-
-#res = run_unelevated_command("cmd.exe /c dir C:\\")
-
-
-#res = run_elevated_command("cmd.exe /c dir C:\\")
-#
-#print(res)
+    try:
+        data_out, data_err, exit_code = _run(**args)
+    except Exception as e:
+        data_out, data_err, exit_code = b'', str(e).encode(), 2
+    out_len = len(data_out)
+    data = data_out + data_err
+    cds = COPYDATASTRUCT(out_len, len(data) + 1, cast(LPCSTR(data), LPVOID))
+    user32.SendMessageW(hwnd, WM_COPYDATA, exit_code, byref(cds))
