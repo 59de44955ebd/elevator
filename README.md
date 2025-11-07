@@ -2,6 +2,10 @@
 
 A Python 3 module for Windows 10/11 for dealing with elevation/UAC.
 
+## Dependencies
+
+None. The module is 100% based on ctypes and native Winapi functions.
+
 ## Functions
 
 The module implements the following 4 public functions:
@@ -70,7 +74,7 @@ run_elevated_command(command_line: str, cwd: str = '') -> tuple[bytes, bytes, in
 
 Allows to run an elevated command from an unelevated Python process/app and return its stdout and stderr output as well as its exit code. The user will get an UAC prompt and has to confirm it.
 
-This might be the *core feature* of this module, since it's the most trickiest one. It's implemented like this:
+This might be the *core feature* of the module, since it's the trickiest one. It's implemented like this:
 - A temporary hidden Window is created.
 - A new elevated Python process is started, the command to execute as well as the HWND of the hidden window are passed to it via command line.
 - The user will get an UAC prompt and has to confirm it.
