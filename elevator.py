@@ -1,4 +1,4 @@
-__all__ = ['IS_ELEVATED', 'exec_elevated', 'exec_unelevated', 'run_elevated_command', 'run_unelevated_command']
+__all__ = ['IS_ELEVATED', 'exec_elevated', 'exec_unelevated', 'run_elevated_command', 'run_unelevated_command', 'IS_FROZEN']
 
 from ctypes import *
 from ctypes.wintypes import *
@@ -127,9 +127,9 @@ class STARTUPINFOW(Structure):
         ('hStdError',             HANDLE),
     ]
 
-class WNDCLASSEX(Structure):
+class WNDCLASSEXW(Structure):
     def __init__(self, *args, **kwargs):
-        super(WNDCLASSEX, self).__init__(*args, **kwargs)
+        super(WNDCLASSEXW, self).__init__(*args, **kwargs)
         self.cbSize = sizeof(self)
     _fields_ = [
         ('cbSize', c_uint),
@@ -171,7 +171,7 @@ kernel32.OpenProcess.restype = HANDLE
 kernel32.PeekNamedPipe.argtypes = (HANDLE, LPVOID, DWORD, POINTER(DWORD), POINTER(DWORD), POINTER(DWORD))
 kernel32.Process32FirstW.argtypes = (HANDLE, POINTER(PROCESSENTRY32W))
 kernel32.Process32NextW.argtypes = (HANDLE, POINTER(PROCESSENTRY32W))
-kernel32.ReadFile. argtypes = (HANDLE, LPVOID, DWORD, POINTER(DWORD), LPVOID)  #POINTER(OVERLAPPED))
+kernel32.ReadFile. argtypes = (HANDLE, LPVOID, DWORD, POINTER(DWORD), LPVOID)  # POINTER(OVERLAPPED))
 kernel32.WaitForSingleObject.argtypes = (HANDLE, DWORD)
 
 shell32 = windll.shell32
@@ -185,6 +185,7 @@ user32.DispatchMessageW.argtypes = (POINTER(MSG),)
 user32.GetMessageW.argtypes = (POINTER(MSG),HWND,UINT,UINT)
 user32.PostMessageW.argtypes = (HWND, UINT, LPVOID, LPVOID)
 user32.PostMessageW.restype = LONG_PTR
+user32.RegisterClassExW.argtypes = (LPVOID,)  # POINTER(WNDCLASSEXW)
 user32.SendMessageW.argtypes = (HWND, UINT, LPVOID, LPVOID)
 user32.SendMessageW.restype = LONG_PTR
 user32.TranslateMessage.argtypes = (POINTER(MSG),)
@@ -279,19 +280,15 @@ def exec_unelevated(exe: str, params: str = None, cwd: str = None, show: int = 0
     if not ok:
         raise Exception(f'DuplicateTokenEx failed with error {kernel32.GetLastError()}')
 
-    # Special case: CreateProcessWithTokenW() fails if app to run is explorer, so we use a (hidden) CMD as "proxy"
-    if exe.lower() == 'explorer.exe':
-        exe = 'cmd.exe'
-        params = f'/c start explorer {params}' if params else '/c start explorer'
-        show = 0
-
     startup_info = STARTUPINFOW()
     startup_info.dwFlags = STARTF_USESHOWWINDOW
     startup_info.wShowWindow = show
 
     proc_info = PROCESS_INFORMATION()
 
-    ok = advapi32.CreateProcessWithTokenW(new_token_handle, 0, exe, params, 0, None, cwd, byref(startup_info), byref(proc_info))
+    # We don't use lpApplicationName, but instead prepend exe to lpCommandLine, since lpApplicationName does
+    # not use the search path (so requires an absolute path), whereas lpCommandLine does.
+    ok = advapi32.CreateProcessWithTokenW(new_token_handle, 0, None, f'"{exe}" {params}', 0, None, cwd, byref(startup_info), byref(proc_info))
     if not ok:
         raise Exception(f'CreateProcessWithTokenW failed with error {kernel32.GetLastError()}')
 
@@ -486,7 +483,7 @@ class _Receiver():
             return user32.DefWindowProcW(hwnd, msg, wparam, lparam)
 
         self.windowproc = WNDPROC(_window_proc_callback)
-        newclass = WNDCLASSEX()
+        newclass = WNDCLASSEXW()
         newclass.lpfnWndProc = self.windowproc
         newclass.lpszClassName = 'ReceiverClass'
         user32.RegisterClassExW(byref(newclass))
