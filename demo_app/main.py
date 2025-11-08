@@ -129,9 +129,9 @@ class Window(object):
         left = 0, top = 0, width = 0, height = 0,
         window_title = None,
         h_font = None,
-        h_menu = 0,
+        h_menu = None,
         parent_window = None,
-        h_instance = 0
+        h_instance = None
     ):
         self.hwnd = user32.CreateWindowExW(
             ex_style,
@@ -139,10 +139,10 @@ class Window(object):
             window_title,
             style,
             left, top, width, height,
-            parent_window.hwnd if parent_window else 0,
+            parent_window.hwnd if parent_window else None,
             h_menu,
             h_instance,
-            0  # lpParam
+            None  # lpParam
         )
         if h_font:
             user32.SendMessageW(self.hwnd, WM_SETFONT, h_font, MAKELPARAM(1, 0))
@@ -156,10 +156,10 @@ class App(Window):
     def __init__(self):
 
         # Create main window
-        if IS_FROZEN:
-            h_icon = user32.LoadIconW(kernel32.GetModuleHandleW(None), MAKEINTRESOURCEW(1))
-        else:
-            h_icon = user32.LoadImageW(0, os.path.join(os.path.dirname(__file__), 'app.ico'), IMAGE_ICON, 16, 16, LR_LOADFROMFILE)
+        h_icon = (
+            user32.LoadIconW(kernel32.GetModuleHandleW(None), MAKEINTRESOURCEW(1)) if IS_FROZEN
+            else user32.LoadImageW(0, os.path.join(os.path.dirname(__file__), 'app.ico'), IMAGE_ICON, 16, 16, LR_LOADFROMFILE)
+        )
 
         def _window_proc_callback(hwnd, msg, wparam, lparam):
             if msg == WM_CLOSE:
