@@ -3,5 +3,4 @@ releases/
 demo_app/build/
 demo_app/dist/demo_app/
 *.spec
-make_dist.cmd
 _backup.rar
