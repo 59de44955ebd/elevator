@@ -169,26 +169,26 @@ class App(Window):
                 command = HIWORD(wparam)
                 if command == BN_CLICKED:
 
-                    if lparam == button_toggle.hwnd:
+                    if lparam == self.button_toggle.hwnd:
                         if IS_ELEVATED:
                             exec_unelevated(sys.executable, params=None if IS_FROZEN else os.path.realpath(__file__), show=1)
                         else:
                             exec_elevated(sys.executable, params=None if IS_FROZEN else os.path.realpath(__file__), show=1)
-                        self.quit()
+                        user32.PostMessageW(self.hwnd, WM_QUIT, 0, 0)
 
-                    elif lparam == button_elevated_command.hwnd:
+                    elif lparam == self.button_elevated_command.hwnd:
                         stdout, stderr, exit_code = run_elevated_command(r'cmd /c dir %windir%\system32\config\systemprofile')
                         if exit_code == 0:
-                            user32.SetWindowTextW(edit.hwnd, stdout.decode('oem'))
+                            user32.SetWindowTextW(self.edit.hwnd, stdout.decode('oem'))
                         else:
-                            user32.SetWindowTextW(edit.hwnd, f'ERROR: {exit_code} - {stderr.decode("oem")}')
+                            user32.SetWindowTextW(self.edit.hwnd, f'ERROR: {exit_code} - {stderr.decode("oem")}')
 
-                    elif lparam == button_unelevated_command.hwnd:
+                    elif lparam == self.button_unelevated_command.hwnd:
                         stdout, stderr, exit_code = run_unelevated_command(r"cmd /c dir %windir%\system32\config\systemprofile")
                         if exit_code == 0:
-                            user32.SetWindowTextW(edit.hwnd, stdout.decode('oem'))
+                            user32.SetWindowTextW(self.edit.hwnd, stdout.decode('oem'))
                         else:
-                            user32.SetWindowTextW(edit.hwnd, f'ERROR: {exit_code} - {stderr.decode("oem")}')
+                            user32.SetWindowTextW(self.edit.hwnd, f'ERROR: {exit_code} - {stderr.decode("oem")}')
 
             return user32.DefWindowProcW(hwnd, msg, wparam, lparam)
 
@@ -211,7 +211,7 @@ class App(Window):
         )
 
         # Create buttons
-        button_toggle = Window(
+        self.button_toggle = Window(
             WC_BUTTON,
             parent_window = self,
             style = WS_VISIBLE | WS_CHILD | BS_PUSHBUTTON,
@@ -220,7 +220,7 @@ class App(Window):
             h_font = gdi32.GetStockObject(DEFAULT_GUI_FONT)
         )
 
-        button_elevated_command = Window(
+        self.button_elevated_command = Window(
             WC_BUTTON,
             parent_window = self,
             style = WS_VISIBLE | WS_CHILD | BS_PUSHBUTTON,
@@ -229,7 +229,7 @@ class App(Window):
             h_font = gdi32.GetStockObject(DEFAULT_GUI_FONT)
         )
 
-        button_unelevated_command = Window(
+        self.button_unelevated_command = Window(
             WC_BUTTON,
             parent_window = self,
             style = WS_VISIBLE | WS_CHILD | BS_PUSHBUTTON,
@@ -239,7 +239,7 @@ class App(Window):
         )
 
         # Create edit control
-        edit = Window(
+        self.edit = Window(
             WC_EDIT,
             parent_window = self,
             style = WS_CHILD | WS_VISIBLE | WS_BORDER | ES_MULTILINE,
@@ -256,9 +256,6 @@ class App(Window):
             user32.DispatchMessageW(byref(msg))
         user32.DestroyWindow(self.hwnd)
         return 0
-
-    def quit(self, *args):
-        user32.PostMessageW(self.hwnd, WM_QUIT, 0, 0)
 
 
 if __name__ == '__main__':
