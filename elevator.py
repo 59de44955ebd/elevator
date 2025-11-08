@@ -20,12 +20,10 @@ WNDPROC = WINFUNCTYPE(LONG_PTR, HWND, UINT, WPARAM, LPARAM)
 ########################################
 
 DUPLICATE_SAME_ACCESS = 2
-FALSE = 0
 INFINITE = 0xFFFFFFFF
 INVALID_HANDLE_VALUE = -1
 PROCESS_QUERY_INFORMATION = 0x0400
 SECURITY_IMPERSONATION = 2
-SEE_MASK_NOCLOSEPROCESS = 0x00000040
 SEE_MASK_NOCLOSEPROCESS = 0x00000040
 STARTF_USESHOWWINDOW = 1
 STARTF_USESTDHANDLES = 256
@@ -33,10 +31,8 @@ TH32CS_SNAPPROCESS = 0x00000002
 TOKEN_ALL_ACCESS = 0xF01FF
 TOKEN_DUPLICATE = 0x0002
 TOKEN_PRIMARY = 1
-TRUE = 1
 WM_COPYDATA = 74
 WM_QUIT = 18
-WS_OVERLAPPEDWINDOW = 13565952
 
 ########################################
 # Winapi Structs
@@ -323,7 +319,7 @@ def _run(command_line: str, cwd: str = '', unelevate: bool = False) -> tuple[byt
     h_child_stderr_read_dup = HANDLE()
 
     sec_attr = SECURITY_ATTRIBUTES()
-    sec_attr.bInheritHandle = TRUE
+    sec_attr.bInheritHandle = 1
 
     # Create a pipe for the child process's STDOUT.
     if not kernel32.CreatePipe(byref(h_child_stdout_read), byref(h_child_stdout_write), byref(sec_attr), 0):
@@ -342,7 +338,7 @@ def _run(command_line: str, cwd: str = '', unelevate: bool = False) -> tuple[byt
         h_proc,
         byref(h_child_stdout_read_dup),
         0,
-        FALSE,
+        0,
         DUPLICATE_SAME_ACCESS
     )
 
@@ -359,7 +355,7 @@ def _run(command_line: str, cwd: str = '', unelevate: bool = False) -> tuple[byt
         h_proc,
         byref(h_child_stderr_read_dup),
         0,
-        FALSE,
+        0,
         DUPLICATE_SAME_ACCESS
     )
 
@@ -422,7 +418,7 @@ def _run(command_line: str, cwd: str = '', unelevate: bool = False) -> tuple[byt
             command_line,
             None,               # process security attributes
             None,               # primary thread security attributes
-            TRUE,               # handles are inherited
+            1,                  # handles are inherited
             0,                  # dwCreationFlags
             None,               # use parent's environment
             cwd if cwd else None,
@@ -498,8 +494,7 @@ class _Receiver():
             0,
             newclass.lpszClassName,
             'Receiver',
-            WS_OVERLAPPEDWINDOW,
-            0, 0, 0, 0,
+            0, 0, 0, 0, 0,
             None, None, None, None
         )
 
